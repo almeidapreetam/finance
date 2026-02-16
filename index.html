@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <title>Ultimate Portfolio Dashboard</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+      <style>
+         body {
+         background-color: #0f172a;
+         color: #f8fafc;
+         font-family: 'Inter', sans-serif;
+         -webkit-tap-highlight-color: transparent;
+         }
+         .card {
+         background-color: #1e293b;
+         border: 1px solid #334155;
+         border-radius: 12px;
+         }
+         .master-card {
+         background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+         border: 1px solid #3b82f6;
+         }
+         .stock-accent {
+         border-top: 4px solid #3b82f6;
+         }
+         .mf-accent {
+         border-top: 4px solid #a855f7;
+         }
+         th {
+         cursor: pointer;
+         white-space: nowrap;
+         transition: 0.2s;
+         user-select: none;
+         }
+         th:hover {
+         color: #60a5fa;
+         }
+         #loader {
+         position: fixed;
+         inset: 0;
+         background: #0f172a;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         z-index: 9999;
+         transition: opacity 0.5s ease;
+         }
+         .spinner {
+         width: 40px;
+         height: 40px;
+         border: 4px solid #1e293b;
+         border-top: 4px solid #3b82f6;
+         border-radius: 50%;
+         animation: spin 1s linear infinite;
+         }
+         @keyframes spin {
+         0% {
+         transform: rotate(0deg);
+         }
+         100% {
+         transform: rotate(360deg);
+         }
+         }
+         .range-container {
+         width: 80px;
+         margin: 0 auto;
+         }
+         @media (min-width: 768px) {
+         .range-container {
+         width: 100px;
+         }
+         }
+         .range-labels {
+         display: flex;
+         justify-content: space-between;
+         font-size: 8px;
+         color: #64748b;
+         margin-bottom: 2px;
+         font-weight: bold;
+         }
+         .range-bar-bg {
+         height: 6px;
+         background: linear-gradient(to right, #ef4444, #eab308, #22c55e);
+         border-radius: 3px;
+         position: relative;
+         }
+         .range-needle {
+         height: 10px;
+         width: 2px;
+         background: white;
+         position: absolute;
+         top: -2px;
+         border-radius: 2px;
+         box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+         transform: translateX(-50%);
+         }
+      </style>
+   </head>
+   <body class="p-2 md:p-8 lg:p-12 pb-20">
+      <div id="loader">
+         <div class="spinner"></div>
+         <p class="mt-4 text-blue-400 text-sm font-medium animate-pulse">Syncing...</p>
+      </div>
+      <div class="card master-card p-4 md:p-8 mb-6 shadow-2xl relative overflow-hidden">
+         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative z-10">
+            <div class="w-full">
+               <h1 class="text-[10px] md:text-xs uppercase tracking-[0.2em] text-blue-400 font-bold mb-1">Total Net Worth</h1>
+               <div class="flex items-baseline justify-between lg:block">
+                  <div id="total-net-worth" class="text-4xl md:text-5xl font-mono font-bold text-white tracking-tighter">₹0</div>
+                  <button onclick="fetchData()" class="lg:hidden p-2 rounded-full active:bg-slate-800">
+                     <svg id="refresh-icon-mobile" class="text-slate-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                     </svg>
+                  </button>
+               </div>
+               <div id="total-pnl-container" class="flex items-center gap-3 mt-2 opacity-1"><span id="total-pnl-value" class="font-bold text-sm md:text-base"></span><span id="total-pnl-pct" class="text-[10px] md:text-xs px-2 py-0.5 rounded border"></span></div>
+            </div>
+            <div class="w-full lg:w-1/3 mt-2 lg:mt-0">
+               <div class="flex justify-between text-[10px] md:text-xs mb-1.5 text-slate-400 uppercase font-bold tracking-widest"><span>Goal (1 Cr)</span><span id="goal-pct-text" class="text-blue-400">0%</span></div>
+               <div class="w-full bg-slate-800 h-2 md:h-3 rounded-full overflow-hidden border border-slate-700">
+                  <div id="goal-progress-bar" class="bg-blue-500 h-full transition-all duration-1000" style="width: 0%"></div>
+               </div>
+               <p id="goal-countdown" class="text-xs text-slate-400 text-right mt-1"></p>
+            </div>
+         </div>
+         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-700/50">
+    <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+        <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Invested</p>
+        <p id="total-invested" class="text-2xl font-mono text-white mt-1">₹0</p>
+    </div>
+    <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+        <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Stocks Ratio</p>
+        <p id="stock-asset-ratio" class="text-2xl font-mono text-blue-400 mt-1">--</p>
+    </div>
+    <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+        <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">MF Ratio</p>
+        <p id="mf-asset-ratio" class="text-2xl font-mono text-purple-400 mt-1">--</p>
+    </div>
+    <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+        <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Holdings</p>
+        <p id="assets-count" class="text-2xl font-mono text-white mt-1">0</p>
+    </div>
+</div>
+         <p id="last-updated-mobile" class="lg:hidden text-[9px] text-slate-600 font-mono mt-4 text-center">Synced: --:--</p>
+      </div>
+      <div class="card p-4 md:p-6 mb-6 shadow-xl border-blue-900/20">
+         <h3 class="text-[10px] md:text-xs font-bold text-blue-400 uppercase mb-4 italic">Monthly Investment Trend</h3>
+         <div class="h-[220px] md:h-[300px] w-full">
+            <canvas id="investmentChart"></canvas>
+         </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-6">
+         <div class="card p-4 md:p-6 stock-accent">
+            <h2 class="text-xs font-bold text-blue-400 uppercase mb-2 italic">Stocks</h2>
+            <div class="flex justify-between items-end">
+               <div>
+                  <p id="stock-value" class="text-xl md:text-2xl font-mono">₹0</p>
+                  <p id="stock-invested" class="text-[12px] text-slate-500">Inv: ₹0</p>
+               </div>
+               <div class="text-right">
+                  <p id="stock-pnl" class="font-bold text-base md:text-lg">0%</p>
+               </div>
+            </div>
+         </div>
+         <div class="card p-4 md:p-6 mf-accent">
+            <h2 class="text-xs font-bold text-purple-400 uppercase mb-2 italic">Mutual Funds</h2>
+            <div class="flex justify-between items-end">
+               <div>
+                  <p id="mf-value" class="text-xl md:text-2xl font-mono">₹0</p>
+                  <p id="mf-invested" class="text-[12px] text-slate-500">Inv: ₹0</p>
+               </div>
+               <div class="text-right">
+                  <p id="mf-pnl" class="font-bold text-base md:text-lg">0%</p>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="card mb-6 shadow-2xl overflow-hidden border-blue-900/20">
+         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
+            <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-blue-500 rounded"></span> Stock Holdings</h3>
+         </div>
+         <div class="overflow-x-auto">
+            <table class="w-full text-left" id="stockTable">
+               <thead>
+                  <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
+                     <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('stockTable', 0)">Script</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 1, true)">Day</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 2, true)">Price</th>
+                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 3, true)">M.Cap</th>
+                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 4, true)">P/E</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 5, true)">Value</th>
+                     <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 7, true)">P/L</th>
+                  </tr>
+               </thead>
+               <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
+            </table>
+         </div>
+      </div>
+      <div class="card mb-8 shadow-2xl overflow-hidden border-purple-900/20">
+         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
+            <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-purple-500 rounded"></span> Mutual Funds</h3>
+         </div>
+         <div class="overflow-x-auto">
+            <table class="w-full text-left" id="mfTable">
+               <thead>
+                  <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
+                     <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('mfTable', 0)">Fund Name</th>
+                     <th class="p-3 text-right hidden sm:table-cell" onclick="sortTable('mfTable', 1, true)">Units</th>
+                     <th class="p-3 text-right" onclick="sortTable('mfTable', 2, true)">Value</th>
+                     <th class="p-3 text-right" onclick="sortTable('mfTable', 3, true)">P/L</th>
+                  </tr>
+               </thead>
+               <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
+            </table>
+         </div>
+      </div>
+      <script>
+         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
+         let investmentChart = null;
+         document.addEventListener('DOMContentLoaded', fetchData);
+         async function fetchData() {
+             const refreshIcon = document.getElementById('refresh-icon');
+             const refreshIconMobile = document.getElementById('refresh-icon-mobile');
+             const loader = document.getElementById('loader');
+             if (refreshIcon) refreshIcon.classList.add('animate-spin');
+             if (refreshIconMobile) refreshIconMobile.classList.add('animate-spin');
+             try {
+                 const response = await fetch(WEB_APP_URL);
+                 const data = await response.json();
+                 renderDashboard(data);
+                 renderMonthlyChart(data);
+                 const timeStr = new Date().toLocaleTimeString('en-IN', {
+                     hour: '2-digit',
+                     minute: '2-digit'
+                 });
+                 if (document.getElementById('last-updated')) document.getElementById('last-updated').innerText = `Last Sync: ${timeStr}`;
+                 if (document.getElementById('last-updated-mobile')) document.getElementById('last-updated-mobile').innerText = `Synced: ${timeStr}`;
+             } catch (error) {
+                 console.error("Error fetching data:", error);
+                 alert("Failed to sync. Check internet.");
+             } finally {
+                 if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+                 if (refreshIconMobile) refreshIconMobile.classList.remove('animate-spin');
+                 loader.style.opacity = '0';
+                 setTimeout(() => loader.style.display = 'none', 500);
+             }
+         }
+         
+         function formatMarketCap(num) {
+             if (!num || isNaN(num) || num === 0) return "-";
+             const inCrores = num / 10000000;
+             return Math.round(inCrores).toLocaleString('en-IN') + ' Cr';
+         }
+
+         function calculateGoalCountdown(totalNetWorth, transactions) {
+            const GOAL = 10000000;
+            const remaining = GOAL - totalNetWorth;
+            if (remaining <= 0) {
+                return "Goal Achieved!";
+            }
+
+            const monthlyData = processMonthlyData(transactions);
+            const monthlyInvestments = monthlyData.values;
+
+            if (monthlyInvestments.length === 0) {
+                return "N/A";
+            }
+
+            const totalInvestment = monthlyInvestments.reduce((sum, amount) => sum + amount, 0);
+            const averageMonthlyInvestment = totalInvestment / monthlyInvestments.length;
+
+            if (averageMonthlyInvestment <= 0) {
+                return "N/A";
+            }
+
+            const monthsNeeded = remaining / averageMonthlyInvestment;
+            const years = Math.floor(monthsNeeded / 12);
+            const months = Math.round(monthsNeeded % 12);
+
+            return `${years}Y ${months}M`;
+        }
+         //preetam
+         function processMonthlyData(transactions) {
+             const monthlyMap = {};
+             const startDate = new Date(2026, 3, 1);
+             const endDate = new Date(2027, 2, 31);
+             if (!transactions) return {
+                 labels: [],
+                 values: []
+             };
+             transactions.forEach(txn => {
+                 const date = new Date(txn.date);
+                 if (!isNaN(date) && date >= startDate && date <= endDate) {
+                     const label = date.toLocaleString('default', {
+                         month: 'short',
+                         year: '2-digit'
+                     });
+                     const amount = parseFloat(txn.amount) || 0;
+                     if (txn.action === 'BUY') {
+                         monthlyMap[label] = (monthlyMap[label] || 0) + amount;
+                     } else if (txn.action === 'SELL') {
+                         monthlyMap[label] = (monthlyMap[label] || 0) - amount;
+                     }
+                 }
+             });
+             const sortedLabels = Object.keys(monthlyMap).sort((a, b) => new Date(a) - new Date(b));
+             return {
+                 labels: sortedLabels,
+                 values: sortedLabels.map(l => monthlyMap[l])
+             };
+         }
+         
+         function renderMonthlyChart(data) {
+             const ctx = document.getElementById('investmentChart').getContext('2d');
+             Chart.register(ChartDataLabels);
+             const chartData = processMonthlyData(data.Transactions || []);
+             const isMobile = window.innerWidth < 768;
+             if (investmentChart) investmentChart.destroy();
+             investmentChart = new Chart(ctx, {
+                 type: 'bar',
+                 data: {
+                     labels: chartData.labels,
+                     datasets: [{
+                         data: chartData.values,
+                         backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                         borderColor: '#3b82f6',
+                         borderWidth: 1,
+                         borderRadius: 4,
+                         barPercentage: 0.7
+                     }]
+                 },
+                 options: {
+                     responsive: true,
+                     maintainAspectRatio: false,
+                     layout: {
+                         padding: {
+                             top: 25
+                         }
+                     },
+                     plugins: {
+                         legend: {
+                             display: false
+                         },
+                         datalabels: {
+                             anchor: 'end',
+                             align: 'top',
+                             color: '#60a5fa',
+                             font: {
+                                 weight: 'bold',
+                                 size: isMobile ? 9 : 11
+                             },
+                             formatter: (v) => '₹' + v.toLocaleString('en-IN', {maximumFractionDigits:0})
+                         }
+                     },
+                     scales: {
+                         y: {
+                             display: false
+                         },
+                         x: {
+                             grid: {
+                                 display: false
+                             },
+                             ticks: {
+                                 color: '#94a3b8',
+                                 font: {
+                                     size: isMobile ? 9 : 11
+                                 }
+                             }
+                         }
+                     }
+                 }
+             });
+         }
+         
+         function renderDashboard(data) {
+             const stockBody = document.querySelector('#stockTable tbody');
+             const mfBody = document.querySelector('#mfTable tbody');
+             stockBody.innerHTML = '';
+             mfBody.innerHTML = '';
+             let tInv = 0,
+                 tVal = 0,
+                 sInv = 0,
+                 sVal = 0,
+                 mInv = 0,
+                 mVal = 0,
+                 count = 0;
+             if (data.Stock) {
+                 Object.keys(data.Stock).forEach(symbol => {
+                     const item = data.Stock[symbol];
+                     if (item.units <= 0) return;
+                     count++;
+                     const val = (item.livePrice || 0) * item.units;
+                     const pnl = val - item.invested;
+                     sInv += item.invested;
+                     sVal += val;
+                     tInv += item.invested;
+                     tVal += val;
+                     const range = (item.high52 > item.low52) ? ((item.livePrice - item.low52) / (item.high52 - item.low52)) * 100 : 50;
+                     const dayChange = item.changePct || 0;
+                     const dayColor = dayChange >= 0 ? 'text-green-400' : 'text-red-400';
+         // Helper to ensure the symbol is formatted for TradingView (e.g., NSE:SYMBOL)
+         const tvSymbol = symbol.includes(':') ? symbol : `NSE:${symbol}`;
+         
+         stockBody.innerHTML += `
+         <tr class="hover:bg-slate-800/50 transition-colors">
+         <td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50">
+         <a href="https://www.tradingview.com/chart/?symbol=${tvSymbol}" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="hover:text-blue-400 transition-colors decoration-dotted underline-offset-4 hover:underline">
+             ${item.name}
+         </a>
+         <span class="text-[9px] text-slate-500 block truncate max-w-[80px] sm:max-w-none">
+             ${symbol}
+         </span>
+         </td>
+         
+         <td class="p-3 text-right font-semibold ${dayColor} whitespace-nowrap">
+         ${dayChange > 0 ? '+' : ''}${dayChange.toFixed(2)}%
+         </td>
+         
+         <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">
+         ₹${(item.livePrice || 0).toLocaleString('en-IN')}
+         </td>
+         
+         <td class="p-3 text-right font-mono text-slate-300 hidden md:table-cell">
+         ${formatMarketCap(item.marketCap)}
+         </td>
+         
+         <td class="p-3 text-right font-mono text-slate-400 hidden md:table-cell">
+         ${item.pe || '--'}
+         </td>
+         
+         <td class="p-3 text-right font-semibold whitespace-nowrap"> 
+         ₹${(val || 0).toLocaleString('en-IN')}
+         <div class="text-[9px] text-slate-500 font-normal hidden sm:block">
+             ${item.units} Qty
+         </div>
+         </td>
+         
+         <td class="p-3 hidden lg:table-cell">
+         <div class="range-container">
+             <div class="range-labels"><span>L</span><span>H</span></div>
+             <div class="range-bar-bg">
+                 <div class="range-needle" style="left: ${Math.min(100, Math.max(0, range))}%"></div>
+             </div>
+         </div>
+         </td>
+         
+         <td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
+         ${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%
+         </td>
+         </tr>`;
+                 });
+             }
+             if (data.MF) {
+                 Object.keys(data.MF).forEach(symbol => {
+                     const item = data.MF[symbol];
+                     if (item.units <= 0) return;
+                     count++;
+                     const val = item.currentValue || 0;
+                     const pnl = val - item.invested;
+                     mInv += item.invested;
+                     mVal += val;
+                     tInv += item.invested;
+                     tVal += val;
+                     mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td></tr>`;
+                 });
+             }
+             document.getElementById('total-net-worth').innerText = `₹${tVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+             document.getElementById('total-invested').innerText = `₹${tInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+             document.getElementById('assets-count').innerText = `${count} Scrips`;
+             const eqPct = tVal > 0 ? Math.round((sVal / tVal) * 100) : 0;
+             const mfPct = tVal > 0 ? Math.round((mVal / tVal) * 100) : 0;
+             document.getElementById('stock-asset-ratio').innerText = `${eqPct}%`;
+             document.getElementById('mf-asset-ratio').innerText = `${mfPct}%`;
+             const totalGain = tVal - tInv;
+             document.getElementById('total-pnl-value').innerText = `${totalGain >= 0 ? '▲' : '▼'} ₹${Math.abs(totalGain).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+             document.getElementById('total-pnl-value').className = totalGain >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
+             document.getElementById('total-pnl-pct').innerText = `${(tInv > 0 ? (totalGain/tInv*100) : 0).toFixed(2)}%`;
+             const progress = Math.min((tVal / 10000000) * 100, 100);
+             document.getElementById('goal-progress-bar').style.width = `${progress}%`;
+             document.getElementById('goal-pct-text').innerText = `${progress.toFixed(1)}%`;
+             const countdown = calculateGoalCountdown(tVal, data.Transactions);
+             document.getElementById('goal-countdown').innerText = `~ ${countdown}`;
+             document.getElementById('stock-value').innerText = `₹${sVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+             document.getElementById('stock-invested').innerText = `₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+             const sGain = sVal - sInv;
+             document.getElementById('stock-pnl').innerText = `${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%`;
+             document.getElementById('stock-pnl').className = sGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+             document.getElementById('mf-value').innerText = `₹${mVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+             document.getElementById('mf-invested').innerText = `Inv: ₹${(mInv).toFixed(0)}`;
+             document.getElementById('mf-invested').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+             const mGain = mVal - mInv;
+             document.getElementById('mf-pnl').innerText = `${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%`;
+             document.getElementById('mf-pnl').className = mGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+         }
+         
+         function sortTable(id, n, isNum) {
+             let t = document.getElementById(id),
+                 r = Array.from(t.rows).slice(1),
+                 dir = t.getAttribute("data-dir-" + n) === "asc" ? "desc" : "asc";
+             t.setAttribute("data-dir-" + n, dir);
+             r.sort((a, b) => {
+                 let x = a.cells[n].innerText.replace(/[₹,%+▲▼\s]|Cr|k/g, '').trim();
+                 let y = b.cells[n].innerText.replace(/[₹,%+▲▼\s]|Cr|k/g, '').trim();
+                 if (isNum) {
+                     x = (x === '--' || x === 'N/A' || x === '') ? -1 : parseFloat(x);
+                     y = (y === '--' || y === 'N/A' || y === '') ? -1 : parseFloat(y);
+                 }
+                 if (dir === "asc") return isNum ? x - y : x.localeCompare(y);
+                 return isNum ? y - x : y.localeCompare(x);
+             }).forEach(row => t.tBodies[0].appendChild(row));
+         }
+      </script>
+   </body>
+</html>
