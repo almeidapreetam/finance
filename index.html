@@ -224,12 +224,13 @@
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
          let investmentChart = null;
          document.addEventListener('DOMContentLoaded', fetchData);
+
          async function fetchData() {
     const refreshIconMobile = document.getElementById('refresh-icon-mobile');
     const loader = document.getElementById('loader');
     
-    // Start syncing animation [cite: 43]
-    if (refreshIconMobile) refreshIconMobile.classList.add('animate-spin');
+    // Start syncing animation
+    if (refreshIconMobile) refreshIconMobile.classList.add('animate-spin'); [cite: 43, 44]
     
     try {
         const response = await fetch(WEB_APP_URL); [cite: 44]
@@ -241,15 +242,15 @@
             if (versionElem) versionElem.innerText = data.version;
         }
 
-        // Render dashboard components 
-        renderDashboard(data); 
-        renderMonthlyChart(data);
+        // Render dashboard components
+        renderDashboard(data); [cite: 45]
+        renderMonthlyChart(data); [cite: 45]
 
-        // Update sync timestamp [cite: 45, 46]
+        // Update sync timestamp
         const timeStr = new Date().toLocaleTimeString('en-IN', {
             hour: '2-digit',
             minute: '2-digit'
-        });
+        }); [cite: 45]
         
         if (document.getElementById('last-updated-mobile')) {
             document.getElementById('last-updated-mobile').innerText = `Synced: ${timeStr}`; [cite: 46]
@@ -259,8 +260,8 @@
         console.error("Error fetching data:", error); [cite: 47]
         alert("Failed to sync. Check internet."); [cite: 48]
     } finally {
-        // Stop animations and hide loader [cite: 49]
-        if (refreshIconMobile) refreshIconMobile.classList.remove('animate-spin');
+        // Stop animations and hide loader
+        if (refreshIconMobile) refreshIconMobile.classList.remove('animate-spin'); [cite: 49]
         if (loader) {
             loader.style.opacity = '0'; [cite: 49]
             setTimeout(() => loader.style.display = 'none', 500); [cite: 49]
@@ -402,7 +403,7 @@
 
     let tInv = 0, tVal = 0, sInv = 0, sVal = 0, mInv = 0, mVal = 0, count = 0;
 
-    // CHANGE: Merge Stock and ETF data into a single object for the table
+    // 1. Merge Stock and ETF data into a single object for processing
     const combinedEquity = { ...(data.Stock || {}), ...(data.ETF || {}) }; 
 
     Object.keys(combinedEquity).forEach(symbol => {
@@ -413,7 +414,7 @@
         const val = (item.livePrice || 0) * item.units;
         const pnl = val - item.invested;
         
-        // These totals now include both Stocks and ETFs automatically
+        // Summing up Equity (Stock + ETF) totals
         sInv += item.invested;
         sVal += val;
         tInv += item.invested;
@@ -422,6 +423,8 @@
         const range = (item.high52 > item.low52) ? ((item.livePrice - item.low52) / (item.high52 - item.low52)) * 100 : 50;
         const dayChange = item.changePct || 0;
         const dayColor = dayChange >= 0 ? 'text-green-400' : 'text-red-400';
+        
+        // Ensure TradingView symbol is formatted correctly with backticks
         const tvSymbol = symbol.includes(':') ? symbol : `NSE:${symbol}`;
         
         stockBody.innerHTML += `
@@ -440,6 +443,7 @@
         </tr>`;
     });
 
+    // 2. Process Mutual Funds
     if (data.MF) {
         Object.keys(data.MF).forEach(symbol => {
             const item = data.MF[symbol];
@@ -455,7 +459,7 @@
         });
     }
 
-    // Update Header UI elements
+    // 3. Update Main Dashboard Summary Cards
     document.getElementById('total-net-worth').innerText = `₹${tVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
     document.getElementById('total-invested').innerText = `₹${tInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
     document.getElementById('assets-count').innerText = `${count} Scrips`;
@@ -467,11 +471,13 @@
     document.getElementById('total-pnl-value').className = totalGain >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
     document.getElementById('total-pnl-pct').innerText = `${(tInv > 0 ? (totalGain/tInv*100) : 0).toFixed(2)}%`;
     
+    // 4. Update Goal Progress
     const progress = Math.min((tVal / 10000000) * 100, 100);
     document.getElementById('goal-progress-bar').style.width = `${progress}%`;
     document.getElementById('goal-pct-text').innerText = `${progress.toFixed(1)}%`;
     document.getElementById('goal-countdown').innerText = `~ ${calculateGoalCountdown(tVal, data.Transactions)}`;
 
+    // 5. Update Asset Specific Summary Cards
     document.getElementById('stock-value').innerText = `₹${sVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
     document.getElementById('stock-invested').innerText = `Inv: ₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
     const sGain = sVal - sInv;
