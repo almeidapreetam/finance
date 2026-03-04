@@ -225,32 +225,48 @@
          let investmentChart = null;
          document.addEventListener('DOMContentLoaded', fetchData);
          async function fetchData() {
-             const refreshIcon = document.getElementById('refresh-icon');
-             const refreshIconMobile = document.getElementById('refresh-icon-mobile');
-             const loader = document.getElementById('loader');
-             if (refreshIcon) refreshIcon.classList.add('animate-spin');
-             if (refreshIconMobile) refreshIconMobile.classList.add('animate-spin');
-             try {
-                 const response = await fetch(WEB_APP_URL);
-                 const data = await response.json();
-                 renderDashboard(data);
-                 renderMonthlyChart(data);
-                 const timeStr = new Date().toLocaleTimeString('en-IN', {
-                     hour: '2-digit',
-                     minute: '2-digit'
-                 });
-                 if (document.getElementById('last-updated')) document.getElementById('last-updated').innerText = `Last Sync: ${timeStr}`;
-                 if (document.getElementById('last-updated-mobile')) document.getElementById('last-updated-mobile').innerText = `Synced: ${timeStr}`;
-             } catch (error) {
-                 console.error("Error fetching data:", error);
-                 alert("Failed to sync. Check internet.");
-             } finally {
-                 if (refreshIcon) refreshIcon.classList.remove('animate-spin');
-                 if (refreshIconMobile) refreshIconMobile.classList.remove('animate-spin');
-                 loader.style.opacity = '0';
-                 setTimeout(() => loader.style.display = 'none', 500);
-             }
-         }
+    const refreshIconMobile = document.getElementById('refresh-icon-mobile');
+    const loader = document.getElementById('loader');
+    
+    // Start syncing animation [cite: 43]
+    if (refreshIconMobile) refreshIconMobile.classList.add('animate-spin');
+    
+    try {
+        const response = await fetch(WEB_APP_URL); [cite: 44]
+        const data = await response.json(); [cite: 45]
+        
+        // NEW: Update Version Number from API response
+        if (data.version) {
+            const versionElem = document.getElementById('app-version');
+            if (versionElem) versionElem.innerText = data.version;
+        }
+
+        // Render dashboard components 
+        renderDashboard(data); 
+        renderMonthlyChart(data);
+
+        // Update sync timestamp [cite: 45, 46]
+        const timeStr = new Date().toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        if (document.getElementById('last-updated-mobile')) {
+            document.getElementById('last-updated-mobile').innerText = `Synced: ${timeStr}`; [cite: 46]
+        }
+        
+    } catch (error) {
+        console.error("Error fetching data:", error); [cite: 47]
+        alert("Failed to sync. Check internet."); [cite: 48]
+    } finally {
+        // Stop animations and hide loader [cite: 49]
+        if (refreshIconMobile) refreshIconMobile.classList.remove('animate-spin');
+        if (loader) {
+            loader.style.opacity = '0'; [cite: 49]
+            setTimeout(() => loader.style.display = 'none', 500); [cite: 49]
+        }
+    }
+}
          
          function formatMarketCap(num) {
              if (!num || isNaN(num) || num === 0) return "-";
@@ -379,128 +395,95 @@
          }
          
          function renderDashboard(data) {
-             const stockBody = document.querySelector('#stockTable tbody');
-             const mfBody = document.querySelector('#mfTable tbody');
-             stockBody.innerHTML = '';
-             mfBody.innerHTML = '';
-             let tInv = 0,
-                 tVal = 0,
-                 sInv = 0,
-                 sVal = 0,
-                 mInv = 0,
-                 mVal = 0,
-                 count = 0;
-             if (data.Stock) {
-                 Object.keys(data.Stock).forEach(symbol => {
-                     const item = data.Stock[symbol];
-                     if (item.units <= 0) return;
-                     count++;
-                     const val = (item.livePrice || 0) * item.units;
-                     const pnl = val - item.invested;
-                     sInv += item.invested;
-                     sVal += val;
-                     tInv += item.invested;
-                     tVal += val;
-                     const range = (item.high52 > item.low52) ? ((item.livePrice - item.low52) / (item.high52 - item.low52)) * 100 : 50;
-                     const dayChange = item.changePct || 0;
-                     const dayColor = dayChange >= 0 ? 'text-green-400' : 'text-red-400';
-         // Helper to ensure the symbol is formatted for TradingView (e.g., NSE:SYMBOL)
-         const tvSymbol = symbol.includes(':') ? symbol : `NSE:${symbol}`;
-         
-         stockBody.innerHTML += `
-         <tr class="hover:bg-slate-800/50 transition-colors">
-         <td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50">
-         <a href="https://www.tradingview.com/chart/?symbol=${tvSymbol}" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="hover:text-blue-400 transition-colors decoration-dotted underline-offset-4 hover:underline">
-             ${item.name}
-         </a>
-         <span class="text-[9px] text-slate-500 block truncate max-w-[80px] sm:max-w-none">
-             ${symbol}
-         </span>
-         </td>
-         
-         <td class="p-3 text-right font-semibold ${dayColor} whitespace-nowrap">
-         ${dayChange > 0 ? '+' : ''}${dayChange.toFixed(2)}%
-         </td>
-         
-         <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">
-         ₹${(item.livePrice || 0).toLocaleString('en-IN')}
-         </td>
-         
-         <td class="p-3 text-right font-mono text-slate-300 hidden md:table-cell">
-         ${formatMarketCap(item.marketCap)}
-         </td>
-         
-         <td class="p-3 text-right font-mono text-slate-400 hidden md:table-cell">
-         ${item.pe || '--'}
-         </td>
-         
-         <td class="p-3 text-right font-semibold whitespace-nowrap"> 
-         ₹${(val || 0).toLocaleString('en-IN')}
-         <div class="text-[9px] text-slate-500 font-normal hidden sm:block">
-             ${item.units} Qty
-         </div>
-         </td>
-         
-         <td class="p-3 hidden lg:table-cell">
-         <div class="range-container">
-             <div class="range-labels"><span>L</span><span>H</span></div>
-             <div class="range-bar-bg">
-                 <div class="range-needle" style="left: ${Math.min(100, Math.max(0, range))}%"></div>
-             </div>
-         </div>
-         </td>
-         
-         <td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
-         ${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%
-         </td>
-         </tr>`;
-                 });
-             }
-             if (data.MF) {
-                 Object.keys(data.MF).forEach(symbol => {
-                     const item = data.MF[symbol];
-                     if (item.units <= 0) return;
-                     count++;
-                     const val = item.currentValue || 0;
-                     const pnl = val - item.invested;
-                     mInv += item.invested;
-                     mVal += val;
-                     tInv += item.invested;
-                     tVal += val;
-                     mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td></tr>`;
-                 });
-             }
-             document.getElementById('total-net-worth').innerText = `₹${tVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-             document.getElementById('total-invested').innerText = `₹${tInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-             document.getElementById('assets-count').innerText = `${count} Scrips`;
-             const eqPct = tVal > 0 ? Math.round((sVal / tVal) * 100) : 0;
-             const mfPct = tVal > 0 ? Math.round((mVal / tVal) * 100) : 0;
-             document.getElementById('stock-asset-ratio').innerText = `${eqPct}%`;
-             document.getElementById('mf-asset-ratio').innerText = `${mfPct}%`;
-             const totalGain = tVal - tInv;
-             document.getElementById('total-pnl-value').innerText = `${totalGain >= 0 ? '▲' : '▼'} ₹${Math.abs(totalGain).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-             document.getElementById('total-pnl-value').className = totalGain >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
-             document.getElementById('total-pnl-pct').innerText = `${(tInv > 0 ? (totalGain/tInv*100) : 0).toFixed(2)}%`;
-             const progress = Math.min((tVal / 10000000) * 100, 100);
-             document.getElementById('goal-progress-bar').style.width = `${progress}%`;
-             document.getElementById('goal-pct-text').innerText = `${progress.toFixed(1)}%`;
-             const countdown = calculateGoalCountdown(tVal, data.Transactions);
-             document.getElementById('goal-countdown').innerText = `~ ${countdown}`;
-             document.getElementById('stock-value').innerText = `₹${sVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-             document.getElementById('stock-invested').innerText = `₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-             const sGain = sVal - sInv;
-             document.getElementById('stock-pnl').innerText = `${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%`;
-             document.getElementById('stock-pnl').className = sGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
-             document.getElementById('mf-value').innerText = `₹${mVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-             document.getElementById('mf-invested').innerText = `Inv: ₹${(mInv).toFixed(0)}`;
-             document.getElementById('mf-invested').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-             const mGain = mVal - mInv;
-             document.getElementById('mf-pnl').innerText = `${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%`;
-             document.getElementById('mf-pnl').className = mGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
-         }
+    const stockBody = document.querySelector('#stockTable tbody');
+    const mfBody = document.querySelector('#mfTable tbody');
+    stockBody.innerHTML = '';
+    mfBody.innerHTML = '';
+
+    let tInv = 0, tVal = 0, sInv = 0, sVal = 0, mInv = 0, mVal = 0, count = 0;
+
+    // CHANGE: Merge Stock and ETF data into a single object for the table
+    const combinedEquity = { ...(data.Stock || {}), ...(data.ETF || {}) }; 
+
+    Object.keys(combinedEquity).forEach(symbol => {
+        const item = combinedEquity[symbol];
+        if (item.units <= 0) return;
+        count++;
+
+        const val = (item.livePrice || 0) * item.units;
+        const pnl = val - item.invested;
+        
+        // These totals now include both Stocks and ETFs automatically
+        sInv += item.invested;
+        sVal += val;
+        tInv += item.invested;
+        tVal += val;
+
+        const range = (item.high52 > item.low52) ? ((item.livePrice - item.low52) / (item.high52 - item.low52)) * 100 : 50;
+        const dayChange = item.changePct || 0;
+        const dayColor = dayChange >= 0 ? 'text-green-400' : 'text-red-400';
+        const tvSymbol = symbol.includes(':') ? symbol : `NSE:${symbol}`;
+        
+        stockBody.innerHTML += `
+        <tr class="hover:bg-slate-800/50 transition-colors">
+           <td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50">
+               <a href="https://www.tradingview.com/chart/?symbol=${tvSymbol}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-400 transition-colors decoration-dotted underline-offset-4 hover:underline">${item.name}</a>
+               <span class="text-[9px] text-slate-500 block truncate max-w-[80px] sm:max-w-none">${symbol}</span>
+           </td>
+           <td class="p-3 text-right font-semibold ${dayColor} whitespace-nowrap">${dayChange > 0 ? '+' : ''}${dayChange.toFixed(2)}%</td>
+           <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">₹${(item.livePrice || 0).toLocaleString('en-IN')}</td>
+           <td class="p-3 text-right font-mono text-slate-300 hidden md:table-cell">${formatMarketCap(item.marketCap)}</td>
+           <td class="p-3 text-right font-mono text-slate-400 hidden md:table-cell">${item.pe || '--'}</td>
+           <td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN')}<div class="text-[9px] text-slate-500 font-normal hidden sm:block">${item.units} Qty</div></td>
+           <td class="p-3 hidden lg:table-cell"><div class="range-container"><div class="range-labels"><span>L</span><span>H</span></div><div class="range-bar-bg"><div class="range-needle" style="left: ${Math.min(100, Math.max(0, range))}%"></div></div></div></td>
+           <td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td>
+        </tr>`;
+    });
+
+    if (data.MF) {
+        Object.keys(data.MF).forEach(symbol => {
+            const item = data.MF[symbol];
+            if (item.units <= 0) return;
+            count++;
+            const val = item.currentValue || 0;
+            const pnl = val - item.invested;
+            mInv += item.invested;
+            mVal += val;
+            tInv += item.invested;
+            tVal += val;
+            mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td></tr>`;
+        });
+    }
+
+    // Update Header UI elements
+    document.getElementById('total-net-worth').innerText = `₹${tVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    document.getElementById('total-invested').innerText = `₹${tInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    document.getElementById('assets-count').innerText = `${count} Scrips`;
+    document.getElementById('stock-asset-ratio').innerText = `${tVal > 0 ? Math.round((sVal / tVal) * 100) : 0}%`;
+    document.getElementById('mf-asset-ratio').innerText = `${tVal > 0 ? Math.round((mVal / tVal) * 100) : 0}%`;
+    
+    const totalGain = tVal - tInv;
+    document.getElementById('total-pnl-value').innerText = `${totalGain >= 0 ? '▲' : '▼'} ₹${Math.abs(totalGain).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    document.getElementById('total-pnl-value').className = totalGain >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
+    document.getElementById('total-pnl-pct').innerText = `${(tInv > 0 ? (totalGain/tInv*100) : 0).toFixed(2)}%`;
+    
+    const progress = Math.min((tVal / 10000000) * 100, 100);
+    document.getElementById('goal-progress-bar').style.width = `${progress}%`;
+    document.getElementById('goal-pct-text').innerText = `${progress.toFixed(1)}%`;
+    document.getElementById('goal-countdown').innerText = `~ ${calculateGoalCountdown(tVal, data.Transactions)}`;
+
+    document.getElementById('stock-value').innerText = `₹${sVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    document.getElementById('stock-invested').innerText = `Inv: ₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    const sGain = sVal - sInv;
+    document.getElementById('stock-pnl').innerText = `${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%`;
+    document.getElementById('stock-pnl').className = sGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+
+    document.getElementById('mf-value').innerText = `₹${mVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    document.getElementById('mf-invested').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    const mGain = mVal - mInv;
+    document.getElementById('mf-pnl').innerText = `${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%`;
+    document.getElementById('mf-pnl').className = mGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+}
          
          function sortTable(id, n, isNum) {
              let t = document.getElementById(id),
