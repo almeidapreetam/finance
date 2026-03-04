@@ -220,6 +220,9 @@
             </table>
          </div>
       </div>
+      <div class="mt-8 text-center text-[10px] text-slate-500 font-mono uppercase tracking-widest">
+   App Version: <span id="app-version">--</span> | Sync Status: Live
+</div>
       <script>
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
          let investmentChart = null;
@@ -227,6 +230,7 @@
          async function fetchData() {
              const refreshIcon = document.getElementById('refresh-icon');
              const refreshIconMobile = document.getElementById('refresh-icon-mobile');
+             const versionElem = document.getElementById('app-version');
              const loader = document.getElementById('loader');
              if (refreshIcon) refreshIcon.classList.add('animate-spin');
              if (refreshIconMobile) refreshIconMobile.classList.add('animate-spin');
@@ -235,6 +239,8 @@
                  const data = await response.json();
                  renderDashboard(data);
                  renderMonthlyChart(data);
+                 versionElem.innerText = data.version;
+                     
                  const timeStr = new Date().toLocaleTimeString('en-IN', {
                      hour: '2-digit',
                      minute: '2-digit'
