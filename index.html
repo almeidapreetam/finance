@@ -30,6 +30,9 @@
          .mf-accent {
          border-top: 4px solid #a855f7;
          }
+         .etf-accent {
+         border-top: 4px solid #eab308;
+         }
          th {
          cursor: pointer;
          white-space: nowrap;
@@ -128,7 +131,7 @@
                <p id="goal-countdown" class="text-xs text-slate-400 text-right mt-1"></p>
             </div>
          </div>
-         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-700/50">
+         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6 pt-6 border-t border-slate-700/50">
     <div class="bg-slate-800/50 p-4 rounded-lg text-center">
         <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Invested</p>
         <p id="total-invested" class="text-2xl font-mono text-white mt-1">₹0</p>
@@ -136,6 +139,10 @@
     <div class="bg-slate-800/50 p-4 rounded-lg text-center">
         <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Stocks Ratio</p>
         <p id="stock-asset-ratio" class="text-2xl font-mono text-blue-400 mt-1">--</p>
+    </div>
+    <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+        <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">ETF Ratio</p>
+        <p id="etf-asset-ratio" class="text-2xl font-mono text-yellow-400 mt-1">--</p>
     </div>
     <div class="bg-slate-800/50 p-4 rounded-lg text-center">
         <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">MF Ratio</p>
@@ -154,7 +161,7 @@
             <canvas id="investmentChart"></canvas>
          </div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
          <div class="card p-4 md:p-6 stock-accent">
             <h2 class="text-xs font-bold text-blue-400 uppercase mb-2 italic">Stocks</h2>
             <div class="flex justify-between items-end">
@@ -164,6 +171,18 @@
                </div>
                <div class="text-right">
                   <p id="stock-pnl" class="font-bold text-base md:text-lg">0%</p>
+               </div>
+            </div>
+         </div>
+         <div class="card p-4 md:p-6 etf-accent">
+            <h2 class="text-xs font-bold text-yellow-400 uppercase mb-2 italic">ETFs</h2>
+            <div class="flex justify-between items-end">
+               <div>
+                  <p id="etf-value" class="text-xl md:text-2xl font-mono">₹0</p>
+                  <p id="etf-invested" class="text-[12px] text-slate-500">Inv: ₹0</p>
+               </div>
+               <div class="text-right">
+                  <p id="etf-pnl" class="font-bold text-base md:text-lg">0%</p>
                </div>
             </div>
          </div>
@@ -202,6 +221,26 @@
             </table>
          </div>
       </div>
+      <div class="card mb-6 shadow-2xl overflow-hidden border-yellow-900/20" id="etf-card">
+         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
+            <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-yellow-500 rounded"></span> ETF Holdings</h3>
+         </div>
+         <div class="overflow-x-auto">
+            <table class="w-full text-left" id="etfTable">
+               <thead>
+                  <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
+                     <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('etfTable', 0)">Script</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 1, true)">Day</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 2, true)">Price</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 3, true)">Value</th>
+                     <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 5, true)">P/L</th>
+                  </tr>
+               </thead>
+               <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
+            </table>
+         </div>
+      </div>
       <div class="card mb-8 shadow-2xl overflow-hidden border-purple-900/20">
          <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
             <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-purple-500 rounded"></span> Mutual Funds</h3>
@@ -222,7 +261,7 @@
       </div>
       <div class="mt-8 text-center text-[10px] text-slate-500 font-mono uppercase tracking-widest">
    App API Version: <span id="app-version">--</span>
-   App UI Version: <span id="app-version">2</span>
+   App UI Version: <span id="app-version">3.0.0</span>
 </div>
       <script>
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
@@ -387,32 +426,39 @@
          
          function renderDashboard(data) {
     const stockBody = document.querySelector('#stockTable tbody');
+    const etfBody = document.querySelector('#etfTable tbody');
     const mfBody = document.querySelector('#mfTable tbody');
     stockBody.innerHTML = '';
+    etfBody.innerHTML = '';
     mfBody.innerHTML = '';
     
     let tInv = 0,
         tVal = 0,
         sInv = 0,
         sVal = 0,
+        eInv = 0,
+        eVal = 0,
         mInv = 0,
         mVal = 0,
         count = 0;
 
-    // Merge Stock and ETF data into a single object
-    const combinedEquity = { ...(data.Stock || {}), ...(data.ETF || {}) };
-
-    // 1. Process Combined Equity (Stocks + ETFs)
-    if (Object.keys(combinedEquity).length > 0) {
-        Object.keys(combinedEquity).forEach(symbol => {
-            const item = combinedEquity[symbol];
+    const renderEquityRows = (items, body, isEtf) => {
+        if (!items) return;
+        Object.keys(items).forEach(symbol => {
+            const item = items[symbol];
             if (item.units <= 0) return;
             count++;
 
             const val = (item.livePrice || 0) * item.units;
             const pnl = val - item.invested;
-            sInv += item.invested;
-            sVal += val;
+            
+            if (isEtf) {
+                eInv += item.invested;
+                eVal += val;
+            } else {
+                sInv += item.invested;
+                sVal += val;
+            }
 
             tInv += item.invested;
             tVal += val;
@@ -423,7 +469,7 @@
             // Helper to ensure the symbol is formatted for TradingView (e.g., NSE:SYMBOL)
             const tvSymbol = symbol.includes(':') ? symbol : `NSE:${symbol}`;
             
-            stockBody.innerHTML += `
+            body.innerHTML += `
             <tr class="hover:bg-slate-800/50 transition-colors">
             <td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50">
             <a href="https://www.tradingview.com/chart/?symbol=${tvSymbol}" 
@@ -445,13 +491,14 @@
             ₹${(item.livePrice || 0).toLocaleString('en-IN')}
             </td>
             
+            ${!isEtf ? `
             <td class="p-3 text-right font-mono text-slate-300 hidden md:table-cell">
             ${formatMarketCap(item.marketCap)}
             </td>
             
             <td class="p-3 text-right font-mono text-slate-400 hidden md:table-cell">
             ${item.pe || '--'}
-            </td>
+            </td>` : ''}
             
             <td class="p-3 text-right font-semibold whitespace-nowrap"> 
             ₹${(val || 0).toLocaleString('en-IN')}
@@ -474,9 +521,17 @@
             </td>
             </tr>`;
         });
-    }
+    };
 
-    // 2. Process Mutual Funds
+    // 1. Process Stocks
+    renderEquityRows(data.Stock, stockBody, false);
+    
+    // 2. Process ETFs
+    renderEquityRows(data.ETF, etfBody, true);
+    const etfCard = document.getElementById('etf-card');
+    if (etfCard) etfCard.style.display = (eVal > 0 || eInv > 0) ? 'block' : 'none';
+
+    // 3. Process Mutual Funds
     if (data.MF) {
         Object.keys(data.MF).forEach(symbol => {
             const item = data.MF[symbol];
@@ -498,9 +553,11 @@
     document.getElementById('assets-count').innerText = `${count} Scrips`;
     
     const eqPct = tVal > 0 ? Math.round((sVal / tVal) * 100) : 0;
+    const etfPct = tVal > 0 ? Math.round((eVal / tVal) * 100) : 0;
     const mfPct = tVal > 0 ? Math.round((mVal / tVal) * 100) : 0;
     
     document.getElementById('stock-asset-ratio').innerText = `${eqPct}%`;
+    document.getElementById('etf-asset-ratio').innerText = `${etfPct}%`;
     document.getElementById('mf-asset-ratio').innerText = `${mfPct}%`;
     
     const totalGain = tVal - tInv;
@@ -522,6 +579,13 @@
     document.getElementById('stock-pnl').innerText = `${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%`;
     document.getElementById('stock-pnl').className = sGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
     
+    document.getElementById('etf-value').innerText = `₹${eVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    document.getElementById('etf-invested').innerText = `Inv: ₹${eInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+    
+    const eGain = eVal - eInv;
+    document.getElementById('etf-pnl').innerText = `${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%`;
+    document.getElementById('etf-pnl').className = eGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+
     document.getElementById('mf-value').innerText = `₹${mVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
     document.getElementById('mf-invested').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
     
