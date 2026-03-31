@@ -20,7 +20,7 @@ function GETMF(schemeCode, field) {
 
 function doGet() {
   // --- CONFIGURATION ---
-  const VERSION = "1.24"; // Hardcoded version number
+  const VERSION = "1.26"; // Hardcoded version number
   
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ledgerSheet = ss.getSheetByName("Ledger");
@@ -100,6 +100,7 @@ function doGet() {
         s.currentValue = s.livePrice * s.units;
         s.pnl = s.currentValue - s.invested;
         s.pnlPct = s.invested > 0 ? (s.pnl / s.invested) * 100 : 0;
+        s.dayPnl = s.currentValue * s.changePct / (100 + s.changePct);
       }
     });
   }
@@ -115,6 +116,7 @@ function doGet() {
       m.currentValue = m.livePrice * m.units;
       m.pnl = m.currentValue - m.invested;
       m.pnlPct = m.invested > 0 ? (m.pnl / m.invested) * 100 : 0;
+      m.dayPnl = 0; // Placeholder for day's P&L
     } catch(e) {
       m.livePrice = 0;
     }

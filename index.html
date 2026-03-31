@@ -115,6 +115,7 @@
                <h1 class="text-[10px] md:text-xs uppercase tracking-[0.2em] text-blue-400 font-bold mb-1">Total Net Worth</h1>
                <div class="flex items-baseline justify-between lg:block">
                   <div id="total-net-worth" class="text-4xl md:text-5xl font-mono font-bold text-white tracking-tighter">₹0</div>
+                  <div id="total-day-pnl-container" class="flex items-center gap-3 mt-2 opacity-1"><span id="total-day-pnl-value" class="font-bold text-sm md:text-base"></span></div>
                   <button onclick="fetchData()" class="lg:hidden p-2 rounded-full active:bg-slate-800">
                      <svg id="refresh-icon-mobile" class="text-slate-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -235,6 +236,7 @@
                      <th class="p-3 text-right" onclick="sortTable('stockTable', 5, true)">Value</th>
                      <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
                      <th class="p-3 text-right" onclick="sortTable('stockTable', 7, true)">P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 8, true)">Day's P/L</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -255,6 +257,7 @@
                      <th class="p-3 text-right" onclick="sortTable('etfTable', 3, true)">Value</th>
                      <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
                      <th class="p-3 text-right" onclick="sortTable('etfTable', 5, true)">P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 6, true)">Day's P/L</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -273,6 +276,7 @@
                      <th class="p-3 text-right hidden sm:table-cell" onclick="sortTable('mfTable', 1, true)">Units</th>
                      <th class="p-3 text-right" onclick="sortTable('mfTable', 2, true)">Value</th>
                      <th class="p-3 text-right" onclick="sortTable('mfTable', 3, true)">P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('mfTable', 4, true)">Day's P/L</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -280,8 +284,8 @@
          </div>
       </div>
       <div class="mt-8 text-center text-[10px] text-slate-500 font-mono uppercase tracking-widest">
-   App API Version: <span id="app-version">--</span>
-   App UI Version: <span id="app-version">3.1.0</span>
+   App API Version: <span id="api-version">--</span>
+   App UI Version: <span id="ui-version">3.1.0</span>
 </div>
       <script>
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
@@ -290,7 +294,6 @@
          async function fetchData() {
              const refreshIcon = document.getElementById('refresh-icon');
              const refreshIconMobile = document.getElementById('refresh-icon-mobile');
-             const versionElem = document.getElementById('app-version');
              const loader = document.getElementById('loader');
              if (refreshIcon) refreshIcon.classList.add('animate-spin');
              if (refreshIconMobile) refreshIconMobile.classList.add('animate-spin');
@@ -299,7 +302,7 @@
                  const data = await response.json();
                  renderDashboard(data);
                  renderMonthlyChart(data);
-                 versionElem.innerText = data.version;
+                 document.getElementById('api-version').innerText = data.version;
                      
                  const timeStr = new Date().toLocaleTimeString('en-IN', {
                      hour: '2-digit',
@@ -461,6 +464,9 @@
 				eVal = 0,
 				mInv = 0,
 				mVal = 0,
+				sDayPnl = 0,
+				eDayPnl = 0,
+				mDayPnl = 0,
 				count = 0;
 			const renderWatchlist = (items, body) => {
 				if (!items) return;
@@ -521,12 +527,15 @@
 					count++;
 					const val = (item.livePrice || 0) * item.units;
 					const pnl = val - item.invested;
+					const dayPnl = item.dayPnl || 0;
 					if (isEtf) {
 						eInv += item.invested;
 						eVal += val;
+						eDayPnl += dayPnl;
 					} else {
 						sInv += item.invested;
 						sVal += val;
+						sDayPnl += dayPnl;
 					}
 					tInv += item.invested;
 					tVal += val;
@@ -585,6 +594,9 @@
             <td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
             ${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%
             </td>
+            <td class="p-3 text-right ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
+            ₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}
+            </td>
             </tr>`;
 				});
 			};
@@ -602,11 +614,13 @@
 					count++;
 					const val = item.currentValue || 0;
 					const pnl = val - item.invested;
+					const dayPnl = item.dayPnl || 0;
 					mInv += item.invested;
 					mVal += val;
+					mDayPnl += dayPnl;
 					tInv += item.invested;
 					tVal += val;
-					mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td></tr>`;
+					mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td><td class="p-3 text-right ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td></tr>`;
 				});
 			}
 			// 3. Update DOM Dashboard Elements
@@ -623,6 +637,10 @@
 			document.getElementById('total-pnl-value').innerText = `${totalGain >= 0 ? '▲' : '▼'} ₹${Math.abs(totalGain).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('total-pnl-value').className = totalGain >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
 			document.getElementById('total-pnl-pct').innerText = `${(tInv > 0 ? (totalGain/tInv*100) : 0).toFixed(2)}%`;
+			const totalDayPnl = sDayPnl + eDayPnl + mDayPnl;
+			const totalDayPnlText = totalDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
+			document.getElementById('total-day-pnl-value').innerHTML = `<span class="${totalDayPnlText}">${totalDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(totalDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span>`;
+			
 			const progress = Math.min((tVal / 10000000) * 100, 100);
 			document.getElementById('goal-progress-bar').style.width = `${progress}%`;
 			document.getElementById('goal-pct-text').innerText = `${progress.toFixed(1)}%`;
@@ -631,18 +649,18 @@
 			document.getElementById('stock-value').innerText = `₹${sVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('stock-invested').innerText = `₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			const sGain = sVal - sInv;
-			document.getElementById('stock-pnl').innerText = `${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%`;
-			document.getElementById('stock-pnl').className = sGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+			const sDayPnlText = sDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
+			document.getElementById('stock-pnl').innerHTML = `<span class="${sDayPnlText}">${sDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(sDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${sGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%)</span>`;
 			document.getElementById('etf-value').innerText = `₹${eVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('etf-invested').innerText = `Inv: ₹${eInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			const eGain = eVal - eInv;
-			document.getElementById('etf-pnl').innerText = `${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%`;
-			document.getElementById('etf-pnl').className = eGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+			const eDayPnlText = eDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
+			document.getElementById('etf-pnl').innerHTML = `<span class="${eDayPnlText}">${eDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(eDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${eGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%)</span>`;
 			document.getElementById('mf-value').innerText = `₹${mVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('mf-invested').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			const mGain = mVal - mInv;
-			document.getElementById('mf-pnl').innerText = `${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%`;
-			document.getElementById('mf-pnl').className = mGain >= 0 ? 'text-green-400 font-bold text-base md:text-lg' : 'text-red-400 font-bold text-base md:text-lg';
+			const mDayPnlText = mDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
+			document.getElementById('mf-pnl').innerHTML = `<span class="${mDayPnlText}">${mDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(mDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${mGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%)</span>`;
 		}
          
          function sortTable(id, n, isNum) {
