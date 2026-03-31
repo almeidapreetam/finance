@@ -283,6 +283,14 @@
             </table>
          </div>
       </div>
+      <div id="notes-card" class="card mb-8 shadow-2xl overflow-hidden border-gray-900/20 hidden">
+         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
+            <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-gray-500 rounded"></span> Notes</h3>
+         </div>
+         <div id="notes-content" class="p-4 text-sm text-slate-300 whitespace-pre-wrap">
+            
+         </div>
+      </div>
       <div class="mt-8 text-center text-[10px] text-slate-500 font-mono uppercase tracking-widest">
    App API Version: <span id="api-version">--</span>
    App UI Version: <span id="ui-version">3.1.0</span>
@@ -622,6 +630,15 @@
 					tVal += val;
 					mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td><td class="p-3 text-right ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td></tr>`;
 				});
+			}
+			// Update Notes Panel
+			if (data.Notes && data.Notes.trim() !== "") {
+				const notesCard = document.getElementById('notes-card');
+				const notesContent = document.getElementById('notes-content');
+				if (notesCard && notesContent) {
+					notesContent.innerHTML = data.Notes;
+					notesCard.classList.remove('hidden');
+				}
 			}
 			// 3. Update DOM Dashboard Elements
 			document.getElementById('total-net-worth').innerText = `₹${tVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;

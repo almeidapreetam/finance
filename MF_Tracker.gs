@@ -20,12 +20,13 @@ function GETMF(schemeCode, field) {
 
 function doGet() {
   // --- CONFIGURATION ---
-  const VERSION = "1.26"; // Hardcoded version number
+  const VERSION = "1.27"; // Hardcoded version number
   
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ledgerSheet = ss.getSheetByName("Ledger");
   const liveSheet = ss.getSheetByName("stockLive");
   const watchlistSheet = ss.getSheetByName("WatchList");
+  const othersSheet = ss.getSheetByName("Others");
   
   if (!ledgerSheet || !liveSheet) {
     return ContentService.createTextOutput(JSON.stringify({
@@ -123,6 +124,8 @@ function doGet() {
   });
 
   const watchlist = getWatchlist(watchlistSheet);
+  const notes = othersSheet ? othersSheet.getRange("A2").getValue() : "";
+
   // Final combined response
   const finalOutput = {
     version: VERSION,
@@ -130,7 +133,8 @@ function doGet() {
     ETF: holdings.ETF, // ETF added to the final output
     MF: holdings.MF,
     Transactions: transactions,
-    Watchlist: watchlist
+    Watchlist: watchlist,
+    Notes: notes
   };
 
   return ContentService.createTextOutput(JSON.stringify(finalOutput))
