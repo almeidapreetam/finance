@@ -223,8 +223,13 @@
          </div>
       </div>
       <div class="card mb-6 shadow-2xl overflow-hidden border-blue-900/20">
-         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
+         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30 flex justify-between items-center">
             <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-blue-500 rounded"></span> Stock Holdings</h3>
+            <div class="flex flex-col sm:flex-row sm:items-center text-[10px] sm:text-xs text-right">
+               <div><span class="text-slate-400">Inv: </span><span id="stock-header-inv" class="font-mono text-slate-200">₹0</span></div>
+               <div class="hidden sm:block mx-2 text-slate-600">|</div>
+               <div><span class="text-slate-400">P/L: </span><span id="stock-header-pnl" class="font-mono font-bold">₹0 (0%)</span></div>
+            </div>
          </div>
          <div class="overflow-x-auto">
             <table class="w-full text-left" id="stockTable">
@@ -246,8 +251,13 @@
          </div>
       </div>
       <div class="card mb-6 shadow-2xl overflow-hidden border-yellow-900/20" id="etf-card">
-         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
+         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30 flex justify-between items-center">
             <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-yellow-500 rounded"></span> ETF Holdings</h3>
+            <div class="flex flex-col sm:flex-row sm:items-center text-[10px] sm:text-xs text-right">
+               <div><span class="text-slate-400">Inv: </span><span id="etf-header-inv" class="font-mono text-slate-200">₹0</span></div>
+               <div class="hidden sm:block mx-2 text-slate-600">|</div>
+               <div><span class="text-slate-400">P/L: </span><span id="etf-header-pnl" class="font-mono font-bold">₹0 (0%)</span></div>
+            </div>
          </div>
          <div class="overflow-x-auto">
             <table class="w-full text-left" id="etfTable">
@@ -267,8 +277,13 @@
          </div>
       </div>
       <div class="card mb-8 shadow-2xl overflow-hidden border-purple-900/20">
-         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
+         <div class="p-4 border-b border-slate-700/50 bg-slate-800/30 flex justify-between items-center">
             <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-purple-500 rounded"></span> Mutual Funds</h3>
+            <div class="flex flex-col sm:flex-row sm:items-center text-[10px] sm:text-xs text-right">
+               <div><span class="text-slate-400">Inv: </span><span id="mf-header-inv" class="font-mono text-slate-200">₹0</span></div>
+               <div class="hidden sm:block mx-2 text-slate-600">|</div>
+               <div><span class="text-slate-400">P/L: </span><span id="mf-header-pnl" class="font-mono font-bold">₹0 (0%)</span></div>
+            </div>
          </div>
          <div class="overflow-x-auto">
             <table class="w-full text-left" id="mfTable">
@@ -278,7 +293,7 @@
                      <th class="p-3 text-right hidden sm:table-cell" onclick="sortTable('mfTable', 1, true)">Units</th>
                      <th class="p-3 text-right" onclick="sortTable('mfTable', 2, true)">Value</th>
                      <th class="p-3 text-right" onclick="sortTable('mfTable', 3, true)">P/L</th>
-                     <th class="p-3 text-right" onclick="sortTable('mfTable', 4, true)">Day's P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('mfTable', 4, true)">Total P/L</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -631,7 +646,7 @@
 					mDayPnl += dayPnl;
 					tInv += item.invested;
 					tVal += val;
-					mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td><td class="p-3 text-right ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td></tr>`;
+					mfBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50"><span class="block truncate max-w-[120px] sm:max-w-none">${item.name}</span></td><td class="p-3 text-right hidden sm:table-cell">${item.units.toFixed(1)}</td><td class="p-3 text-right font-semibold whitespace-nowrap">₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%</td><td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">₹${(pnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</td></tr>`;
 				});
 			}
 			// Update Notes Panel
@@ -669,16 +684,22 @@
 			const sGain = sVal - sInv;
 			const sDayPnlText = sDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
 			document.getElementById('stock-pnl').innerHTML = `<span class="${sDayPnlText}">${sDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(sDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${sGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%)</span>`;
+			document.getElementById('stock-header-inv').innerText = `₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			document.getElementById('stock-header-pnl').innerHTML = `<span class="${sGain >= 0 ? 'text-green-400' : 'text-red-400'}">${sGain >= 0 ? '+' : ''}₹${sGain.toLocaleString('en-IN', {maximumFractionDigits:0})} (${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%)</span>`;
 			document.getElementById('etf-value').innerText = `₹${eVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('etf-invested').innerText = `Inv: ₹${eInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			const eGain = eVal - eInv;
 			const eDayPnlText = eDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
 			document.getElementById('etf-pnl').innerHTML = `<span class="${eDayPnlText}">${eDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(eDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${eGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%)</span>`;
+			document.getElementById('etf-header-inv').innerText = `₹${eInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			document.getElementById('etf-header-pnl').innerHTML = `<span class="${eGain >= 0 ? 'text-green-400' : 'text-red-400'}">${eGain >= 0 ? '+' : ''}₹${eGain.toLocaleString('en-IN', {maximumFractionDigits:0})} (${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%)</span>`;
 			document.getElementById('mf-value').innerText = `₹${mVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('mf-invested').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			const mGain = mVal - mInv;
 			const mDayPnlText = mDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
 			document.getElementById('mf-pnl').innerHTML = `<span class="${mDayPnlText}">${mDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(mDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${mGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%)</span>`;
+			document.getElementById('mf-header-inv').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			document.getElementById('mf-header-pnl').innerHTML = `<span class="${mGain >= 0 ? 'text-green-400' : 'text-red-400'}">${mGain >= 0 ? '+' : ''}₹${mGain.toLocaleString('en-IN', {maximumFractionDigits:0})} (${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%)</span>`;
 		}
          
          function sortTable(id, n, isNum) {
