@@ -3,7 +3,7 @@
    <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-      <title>Ultimate Portfolio Dashboard</title>
+      <title>Portfolio Dashboard</title>
       <script src="https://cdn.tailwindcss.com"></script>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -122,7 +122,6 @@
                </div>
                <div class="flex items-baseline justify-between lg:block">
                   <div id="total-net-worth" class="text-4xl md:text-5xl font-mono font-bold text-white tracking-tighter">₹0</div>
-                  <div id="total-day-pnl-container" class="flex items-center gap-3 mt-2 opacity-1"><span class="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Day's P/L</span><span id="total-day-pnl-value" class="font-bold text-sm md:text-base"></span><span id="total-day-pnl-pct" class="text-[10px] md:text-xs px-2 py-0.5 rounded border"></span></div>
                </div>
                <div id="total-pnl-container" class="flex items-center gap-3 mt-2 opacity-1"><span class="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Total P/L</span><span id="total-pnl-value" class="font-bold text-sm md:text-base"></span><span id="total-pnl-pct" class="text-[10px] md:text-xs px-2 py-0.5 rounded border"></span></div>
             </div>
@@ -233,13 +232,13 @@
                   <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
                      <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('stockTable', 0)">Script</th>
                      <th class="p-3 text-right" onclick="sortTable('stockTable', 1, true)">Day</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 2, true)">Price</th>
-                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 3, true)">M.Cap</th>
-                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 4, true)">P/E</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 5, true)">Value</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 2, true)">Day's P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 3, true)">Price</th>
+                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 4, true)">M.Cap</th>
+                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 5, true)">P/E</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 6, true)">Value</th>
                      <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 7, true)">P/L</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 8, true)">Day's P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 8, true)">Total P/L</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -256,11 +255,11 @@
                   <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
                      <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('etfTable', 0)">Script</th>
                      <th class="p-3 text-right" onclick="sortTable('etfTable', 1, true)">Day</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 2, true)">Price</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 3, true)">Value</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 2, true)">Day's P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 3, true)">Price</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 4, true)">Value</th>
                      <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 5, true)">P/L</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 6, true)">Day's P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 6, true)">Total P/L</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -296,7 +295,7 @@
       </div>
       <div class="mt-8 text-center text-[10px] text-slate-500 font-mono uppercase tracking-widest">
    App API Version: <span id="api-version">--</span>
-   App UI Version: <span id="ui-version">3.1.1</span>
+   App UI Version: <span id="ui-version">3.1.2</span>
 </div>
       <script>
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
@@ -573,6 +572,10 @@
             ${dayChange > 0 ? '+' : ''}${dayChange.toFixed(2)}%
             </td>
             
+            <td class="p-3 text-right ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
+            ₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}
+            </td>
+            
             <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">
             ₹${(item.livePrice || 0).toLocaleString('en-IN')}
             </td>
@@ -604,9 +607,6 @@
             
             <td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
             ${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%
-            </td>
-            <td class="p-3 text-right ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
-            ₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}
             </td>
             </tr>`;
 				});
@@ -658,14 +658,6 @@
 			document.getElementById('total-pnl-value').className = totalGain >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
 			document.getElementById('total-pnl-pct').innerText = `${(tInv > 0 ? (totalGain/tInv*100) : 0).toFixed(2)}%`;
 			document.getElementById('total-pnl-pct').className = `text-[10px] md:text-xs px-2 py-0.5 rounded border ${totalGain >= 0 ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-red-400 border-red-500/30 bg-red-500/10'}`;
-			const totalDayPnl = sDayPnl + eDayPnl + mDayPnl;
-			const totalDayPnlText = totalDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
-			document.getElementById('total-day-pnl-value').innerHTML = `<span class="${totalDayPnlText}">${totalDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(totalDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span>`;
-			
-			const prevTotalVal = tVal - totalDayPnl;
-			const totalDayPnlPct = prevTotalVal > 0 ? (totalDayPnl / prevTotalVal * 100) : 0;
-			document.getElementById('total-day-pnl-pct').innerText = `${totalDayPnlPct.toFixed(2)}%`;
-			document.getElementById('total-day-pnl-pct').className = `text-[10px] md:text-xs px-2 py-0.5 rounded border ${totalDayPnl >= 0 ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-red-400 border-red-500/30 bg-red-500/10'}`;
 			
 			const progress = Math.min((tVal / 10000000) * 100, 100);
 			document.getElementById('goal-progress-bar').style.width = `${progress}%`;
