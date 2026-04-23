@@ -212,10 +212,10 @@
                   <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
                      <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('watchlistTable', 0)">Script</th>
                      <th class="p-3 text-right" onclick="sortTable('watchlistTable', 1, true)">Day</th>
-                     <th class="p-3 text-right" onclick="sortTable('watchlistTable', 2, true)">Price</th>
-                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('watchlistTable', 3, true)">M.Cap</th>
-                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('watchlistTable', 4, true)">P/E</th>
-                     <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
+                     <th class="p-3 text-right" onclick="sortTable('watchlistTable', 2, true)">M.Cap</th>
+                     <th class="p-3 text-right" onclick="sortTable('watchlistTable', 3, true)">P/E</th>
+                     <th class="p-3 text-center" onclick="sortTable('watchlistTable', 4, true)">52W Range</th>
+                     <th class="p-3 text-right" onclick="sortTable('watchlistTable', 5, true)">Price</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -236,14 +236,13 @@
                <thead>
                   <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
                      <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('stockTable', 0)">Script</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 1, true)">Day</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 2, true)">Day's P/L</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 3, true)">Price</th>
-                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 4, true)">M.Cap</th>
-                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 5, true)">P/E</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 6, true)">Value</th>
-                     <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
-                     <th class="p-3 text-right" onclick="sortTable('stockTable', 8, true)">Total P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 1, true)">Day's P/L</th>
+                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 2, true)">M.Cap</th>
+                     <th class="p-3 text-right hidden md:table-cell" onclick="sortTable('stockTable', 3, true)">P/E</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 4, true)">Value</th>
+                     <th class="p-3 text-center" onclick="sortTable('stockTable', 5, true)">52W Range</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 6, true)">Total P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('stockTable', 7, true)">Price</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -264,12 +263,11 @@
                <thead>
                   <tr class="text-slate-500 border-b border-slate-700 text-[10px] uppercase bg-slate-800/20">
                      <th class="p-3 sticky left-0 bg-[#1e293b] z-10" onclick="sortTable('etfTable', 0)">Script</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 1, true)">Day</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 2, true)">Day's P/L</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 3, true)">Price</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 4, true)">Value</th>
-                     <th class="p-3 text-center hidden lg:table-cell">52W Range</th>
-                     <th class="p-3 text-right" onclick="sortTable('etfTable', 6, true)">Total P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 1, true)">Day's P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 2, true)">Value</th>
+                     <th class="p-3 text-center" onclick="sortTable('etfTable', 3, true)">52W Range</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 4, true)">Total P/L</th>
+                     <th class="p-3 text-right" onclick="sortTable('etfTable', 5, true)">Price</th>
                   </tr>
                </thead>
                <tbody class="divide-y divide-slate-800 text-xs md:text-sm"></tbody>
@@ -310,7 +308,7 @@
       </div>
       <div class="mt-8 text-center text-[10px] text-slate-500 font-mono uppercase tracking-widest">
    App API Version: <span id="api-version">--</span>
-   App UI Version: <span id="ui-version">3.1.2</span>
+   App UI Version: <span id="ui-version">3.1.3</span>
 </div>
       <script>
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
@@ -519,26 +517,25 @@
             <td class="p-3 text-right font-semibold ${dayColor} whitespace-nowrap">
             ${dayChange > 0 ? '+' : ''}${(dayChange || 0).toFixed(2)}%
             </td>
-            
-            <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">
-            ₹${(item.price || 0).toLocaleString('en-IN')}
-            </td>
-            
-            <td class="p-3 text-right font-mono text-slate-300 hidden md:table-cell">
+            <td class="p-3 text-right font-mono text-slate-300">
             ${formatMarketCap(item.marketcap)}
             </td>
             
-            <td class="p-3 text-right font-mono text-slate-400 hidden md:table-cell">
+            <td class="p-3 text-right font-mono text-slate-400">
             ${item.pe || '--'}
             </td>
             
-            <td class="p-3 hidden lg:table-cell">
+            <td class="p-3">
             <div class="range-container">
                 <div class="range-labels"><span>L</span><span>H</span></div>
                 <div class="range-bar-bg">
                     <div class="range-needle" style="left: ${Math.min(100, Math.max(0, range))}%"></div>
                 </div>
             </div>
+            </td>
+            
+            <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">
+            ₹${(item.price || 0).toLocaleString('en-IN')}
             </td>
             </tr>`;
 				});
@@ -582,19 +579,10 @@
                 ${symbol}
             </span>
             </td>
-            
-            <td class="p-3 text-right font-semibold ${dayColor} whitespace-nowrap">
-            ${dayChange > 0 ? '+' : ''}${dayChange.toFixed(2)}%
+            <td class="p-3 text-right whitespace-nowrap" data-sort-value="${dayChange.toFixed(2)}">
+               <div class="font-semibold ${dayColor}">${dayChange > 0 ? '+' : ''}${dayChange.toFixed(2)}%</div>
+               <div class="text-[9px] ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'}">₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}</div>
             </td>
-            
-            <td class="p-3 text-right ${dayPnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
-            ₹${(dayPnl || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}
-            </td>
-            
-            <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">
-            ₹${(item.livePrice || 0).toLocaleString('en-IN')}
-            </td>
-            
             ${!isEtf ? `
             <td class="p-3 text-right font-mono text-slate-300 hidden md:table-cell">
             ${formatMarketCap(item.marketCap)}
@@ -605,13 +593,13 @@
             </td>` : ''}
             
             <td class="p-3 text-right font-semibold whitespace-nowrap"> 
-            ₹${(val || 0).toLocaleString('en-IN')}
+            ₹${(val || 0).toLocaleString('en-IN', {maximumFractionDigits:0})}
             <div class="text-[9px] text-slate-500 font-normal hidden sm:block">
                 ${item.units} Qty
             </div>
             </td>
             
-            <td class="p-3 hidden lg:table-cell">
+            <td class="p-3">
             <div class="range-container">
                 <div class="range-labels"><span>L</span><span>H</span></div>
                 <div class="range-bar-bg">
@@ -622,6 +610,10 @@
             
             <td class="p-3 text-right ${pnl >= 0 ? 'text-green-400' : 'text-red-400'} font-bold whitespace-nowrap">
             ${(item.invested > 0 ? (pnl/item.invested*100) : 0).toFixed(1)}%
+            </td>
+            
+            <td class="p-3 text-right font-mono text-slate-200 whitespace-nowrap">
+            ₹${(item.livePrice || 0).toLocaleString('en-IN')}
             </td>
             </tr>`;
 				});
@@ -708,8 +700,10 @@
                  dir = t.getAttribute("data-dir-" + n) === "asc" ? "desc" : "asc";
              t.setAttribute("data-dir-" + n, dir);
              r.sort((a, b) => {
-                 let x = a.cells[n].innerText.replace(/[₹,%+▲▼\s]|Cr|k/g, '').trim();
-                 let y = b.cells[n].innerText.replace(/[₹,%+▲▼\s]|Cr|k/g, '').trim();
+                 let cellA = a.cells[n];
+                 let cellB = b.cells[n];
+                 let x = cellA.dataset.sortValue || cellA.innerText.replace(/[₹,%+▲▼\s]|Cr|k/g, '').trim();
+                 let y = cellB.dataset.sortValue || cellB.innerText.replace(/[₹,%+▲▼\s]|Cr|k/g, '').trim();
                  if (isNum) {
                      x = (x === '--' || x === 'N/A' || x === '') ? -1 : parseFloat(x);
                      y = (y === '--' || y === 'N/A' || y === '') ? -1 : parseFloat(y);
