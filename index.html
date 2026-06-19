@@ -159,49 +159,91 @@
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
-         <div class="card p-4 md:p-6 stock-accent">
-            <h2 class="text-xs font-bold text-blue-400 uppercase mb-2 italic">Stocks</h2>
-            <div class="flex justify-between items-end">
-               <div>
-                  <p id="stock-value" class="text-xl md:text-2xl font-mono">₹0</p>
-                  <p id="stock-invested" class="text-[12px] text-slate-500">Inv: ₹0</p>
-               </div>
-               <div class="text-right">
-                  <p id="stock-pnl" class="font-bold text-base md:text-lg">0%</p>
-               </div>
-            </div>
+
+   <div class="card p-4 md:p-6 stock-accent">
+      <h2 class="text-xs font-bold text-blue-400 uppercase mb-3 italic">Stocks</h2>
+
+      <div class="space-y-3">
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Current Value</span>
+            <span id="stock-value" class="font-mono font-bold">₹0</span>
          </div>
-         <div class="card p-4 md:p-6 etf-accent">
-            <h2 class="text-xs font-bold text-yellow-400 uppercase mb-2 italic">ETFs</h2>
-            <div class="flex justify-between items-end">
-               <div>
-                  <p id="etf-value" class="text-xl md:text-2xl font-mono">₹0</p>
-                  <p id="etf-invested" class="text-[12px] text-slate-500">Inv: ₹0</p>
-               </div>
-               <div class="text-right">
-                  <p id="etf-pnl" class="font-bold text-base md:text-lg">0%</p>
-               </div>
-            </div>
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Overall Return</span>
+            <span id="stock-overall-return" class="font-bold">₹0 (0%)</span>
          </div>
-         <div class="card p-4 md:p-6 mf-accent">
-            <h2 class="text-xs font-bold text-purple-400 uppercase mb-2 italic">Mutual Funds</h2>
-            <div class="flex justify-between items-end">
-               <div>
-                  <p id="mf-value" class="text-xl md:text-2xl font-mono">₹0</p>
-                  <p id="mf-invested" class="text-[12px] text-slate-500">Inv: ₹0</p>
-               </div>
-               <div class="text-right">
-                  <p id="mf-pnl" class="font-bold text-base md:text-lg">0%</p>
-               </div>
-            </div>
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Today's Change</span>
+            <span id="stock-today-change" class="font-bold">₹0 (0%)</span>
          </div>
+
       </div>
+   </div>
+
+   <div class="card p-4 md:p-6 etf-accent">
+      <h2 class="text-xs font-bold text-yellow-400 uppercase mb-3 italic">ETFs</h2>
+
+      <div class="space-y-3">
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Current Value</span>
+            <span id="etf-value" class="font-mono font-bold">₹0</span>
+         </div>
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Overall Return</span>
+            <span id="etf-overall-return" class="font-bold">₹0 (0%)</span>
+         </div>
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Today's Change</span>
+            <span id="etf-today-change" class="font-bold">₹0 (0%)</span>
+         </div>
+
+      </div>
+   </div>
+
+   <div class="card p-4 md:p-6 mf-accent">
+      <h2 class="text-xs font-bold text-purple-400 uppercase mb-3 italic">Mutual Funds</h2>
+
+      <div class="space-y-3">
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Current Value</span>
+            <span id="mf-value" class="font-mono font-bold">₹0</span>
+         </div>
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Overall Return</span>
+            <span id="mf-overall-return" class="font-bold">₹0 (0%)</span>
+         </div>
+
+         <div class="flex justify-between">
+            <span class="text-slate-400">Today's Change</span>
+            <span id="mf-today-change" class="font-bold">N/A</span>
+         </div>
+
+      </div>
+   </div>
+
+</div>
       <div class="card p-4 md:p-6 mb-6 shadow-xl border-blue-900/20">
-         <h3 class="text-[10px] md:text-xs font-bold text-blue-400 uppercase mb-4 italic">Monthly Investment Trend</h3>
+         <h3 class="text-[10px] md:text-xs font-bold text-blue-400 uppercase mb-4 italic">Fresh Capital Added (FY 2026-27)</h3>
          <div class="h-[220px] md:h-[300px] w-full">
             <canvas id="investmentChart"></canvas>
          </div>
       </div>
+
+      <div class="card p-4 md:p-6 mb-6 shadow-xl border-cyan-900/20">
+         <h3 class="text-[10px] md:text-xs font-bold text-cyan-400 uppercase mb-4 italic">Broker Allocation</h3>
+         <div class="h-[250px] md:h-[350px]">
+            <canvas id="brokerChart"></canvas>
+         </div>
+      </div>
+
       <div class="card mb-6 shadow-2xl overflow-hidden border-gray-900/20">
          <div class="p-4 border-b border-slate-700/50 bg-slate-800/30">
             <h3 class="text-sm font-bold flex items-center gap-2"><span class="w-1.5 h-4 bg-gray-500 rounded"></span> Watchlist</h3>
@@ -313,6 +355,7 @@
       <script>
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
          let investmentChart = null;
+         let brokerChart = null;
          document.addEventListener('DOMContentLoaded', fetchData);
          async function fetchData() {
              const refreshIcon = document.getElementById('refresh-icon');
@@ -325,6 +368,7 @@
                  const data = await response.json();
                  renderDashboard(data);
                  renderMonthlyChart(data);
+                 renderBrokerChart(data);
                  document.getElementById('api-version').innerText = data.version;
                      
                  const timeStr = new Date().toLocaleTimeString('en-IN', {
@@ -378,35 +422,87 @@
             return `${years}Y ${months}M`;
         }
          //preetam
-         function processMonthlyData(transactions) {
-             const monthlyMap = {};
-             const startDate = new Date(2026, 4, 1);
-             const endDate = new Date(2027, 3, 31);
-             if (!transactions) return {
-                 labels: [],
-                 values: []
-             };
-             transactions.forEach(txn => {
-                 const date = new Date(txn.date);
-                 if (!isNaN(date) && date >= startDate && date <= endDate) {
-                     const label = date.toLocaleString('default', {
-                         month: 'short',
-                         year: '2-digit'
-                     });
-                     const amount = parseFloat(txn.amount) || 0;
-                     if (txn.action === 'BUY') {
-                         monthlyMap[label] = (monthlyMap[label] || 0) + amount;
-                     } else if (txn.action === 'SELL') {
-                         monthlyMap[label] = (monthlyMap[label] || 0) - amount;
-                     }
-                 }
-             });
-             const sortedLabels = Object.keys(monthlyMap).sort((a, b) => new Date(a) - new Date(b));
-             return {
-                 labels: sortedLabels,
-                 values: sortedLabels.map(l => monthlyMap[l])
-             };
-         }
+        function processMonthlyData(transactions) {
+
+    const monthlyMap = {};
+
+    const startDate = new Date(2026, 4, 1);
+    const endDate = new Date(2027, 3, 31);
+
+    let salePool = 0;
+
+    if (!transactions) {
+        return {
+            labels: [],
+            values: []
+        };
+    }
+
+    const sortedTransactions = [...transactions]
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    sortedTransactions.forEach(txn => {
+
+        const date = new Date(txn.date);
+
+        if (
+            isNaN(date) ||
+            date < startDate ||
+            date > endDate
+        ) {
+            return;
+        }
+
+        const amount =
+            parseFloat(txn.amount) || 0;
+
+        const label =
+            date.toLocaleString('default', {
+                month: 'short',
+                year: '2-digit'
+            });
+
+        if (txn.action === 'SELL') {
+
+            salePool += amount;
+
+        }
+        else if (txn.action === 'BUY') {
+
+            let freshMoney = amount;
+
+            if (salePool > 0) {
+
+                const adjustment =
+                    Math.min(
+                        salePool,
+                        amount
+                    );
+
+                freshMoney -= adjustment;
+                salePool -= adjustment;
+            }
+
+            if (freshMoney > 0) {
+
+                monthlyMap[label] =
+                    (monthlyMap[label] || 0) +
+                    freshMoney;
+            }
+        }
+    });
+
+    const sortedLabels =
+        Object.keys(monthlyMap)
+        .sort((a, b) => new Date(a) - new Date(b));
+
+    return {
+        labels: sortedLabels,
+        values: sortedLabels.map(
+            l => monthlyMap[l]
+        )
+    };
+}
          
          function renderMonthlyChart(data) {
              const ctx = document.getElementById('investmentChart').getContext('2d');
@@ -470,6 +566,52 @@
              });
          }
          
+        
+         function renderBrokerChart(data) {
+             const brokerTotals = {};
+             ['Stock','ETF','MF'].forEach(type => {
+                 if(!data[type]) return;
+                 Object.values(data[type]).forEach(asset => {
+                     const broker = asset.broker || 'Unknown';
+                     const value = asset.currentValue || ((asset.livePrice || 0) * (asset.units || 0));
+                     brokerTotals[broker] = (brokerTotals[broker] || 0) + value;
+                 });
+             });
+
+             const labels = Object.keys(brokerTotals);
+             const values = labels.map(x => brokerTotals[x]);
+             const total = values.reduce((a,b)=>a+b,0);
+
+             const ctx = document.getElementById('brokerChart').getContext('2d');
+
+             if(brokerChart) brokerChart.destroy();
+
+             brokerChart = new Chart(ctx, {
+                 type:'bar',
+                 data:{
+                     labels:labels,
+                     datasets:[{data:values,borderWidth:1,borderRadius:6}]
+                 },
+                 options:{
+                     indexAxis:'y',
+                     responsive:true,
+                     maintainAspectRatio:false,
+                     plugins:{
+                         legend:{display:false},
+                         datalabels:{
+                             color:'#ffffff',
+                             anchor:'end',
+                             align:'right',
+                             formatter:(value)=>{
+                                 const pct = total > 0 ? (value/total*100) : 0;
+                                 return '₹' + value.toLocaleString('en-IN',{maximumFractionDigits:0}) + ' (' + pct.toFixed(1) + '%)';
+                             }
+                         }
+                     }
+                 }
+             });
+         }
+
         function renderDashboard(data) {
 			const watchlistBody = document.querySelector('#watchlistTable tbody');
 			const stockBody = document.querySelector('#stockTable tbody');
@@ -498,7 +640,8 @@
 					const range = (item.high52 > item.low52) ? ((item.price - item.low52) / (item.high52 - item.low52)) * 100 : 50;
 					const dayChange = item.changepct || 0;
 					const dayColor = dayChange >= 0 ? 'text-green-400' : 'text-red-400';
-					const tvSymbol = symbol.includes(':') ? symbol : `NSE:${symbol}`;
+					const cleanSymbol = symbol.split('__')[0];
+const tvSymbol = cleanSymbol.includes(':') ? cleanSymbol : `NSE:${cleanSymbol}`;
 					body.innerHTML +=
 						`
             <tr class="hover:bg-slate-800/50 transition-colors">
@@ -507,10 +650,10 @@
                target="_blank" 
                rel="noopener noreferrer" 
                class="hover:text-blue-400 transition-colors decoration-dotted underline-offset-4 hover:underline">
-                ${item.name || symbol}
+                ${item.name || item.companyName || item.assetName || item.displayName || cleanSymbol}
             </a>
             <span class="text-[9px] text-slate-500 block truncate max-w-[80px] sm:max-w-none">
-                ${symbol}
+                ${cleanSymbol}
             </span>
             </td>
             
@@ -565,7 +708,8 @@
 					const dayChange = item.changePct || 0;
 					const dayColor = dayChange >= 0 ? 'text-green-400' : 'text-red-400';
 					// Helper to ensure the symbol is formatted for TradingView (e.g., NSE:SYMBOL)
-					const tvSymbol = symbol.includes(':') ? symbol : `NSE:${symbol}`;
+					const cleanSymbol = symbol.split('__')[0];
+const tvSymbol = cleanSymbol.includes(':') ? cleanSymbol : `NSE:${cleanSymbol}`;
 					body.innerHTML += `
             <tr class="hover:bg-slate-800/50 transition-colors">
             <td class="p-3 font-bold text-slate-200 sticky left-0 bg-[#1e293b] border-r border-slate-700/50">
@@ -672,24 +816,31 @@
 			const countdown = calculateGoalCountdown(tVal, data.Transactions);
 			document.getElementById('goal-countdown').innerText = `~ ${countdown}`;
 			document.getElementById('stock-value').innerText = `₹${sVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-			document.getElementById('stock-invested').innerText = `₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			
 			const sGain = sVal - sInv;
-			const sDayPnlText = sDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
-			document.getElementById('stock-pnl').innerHTML = `<span class="${sDayPnlText}">${sDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(sDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${sGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%)</span>`;
+			const stockDayPct = sVal > 0 ? (sDayPnl / sVal) * 100 : 0;
+document.getElementById('stock-overall-return').innerHTML =
+`<span class="${sGain >= 0 ? 'text-green-400' : 'text-red-400'}">${sGain >= 0 ? '+' : ''}₹${sGain.toLocaleString('en-IN',{maximumFractionDigits:0})} (${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%)</span>`;
+document.getElementById('stock-today-change').innerHTML =
+`<span class="${sDayPnl >= 0 ? 'text-green-400' : 'text-red-400'}">${sDayPnl >= 0 ? '+' : ''}₹${Math.abs(sDayPnl).toLocaleString('en-IN',{maximumFractionDigits:0})} (${stockDayPct.toFixed(2)}%)</span>`;
 			document.getElementById('stock-header-inv').innerText = `₹${sInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('stock-header-pnl').innerHTML = `<span class="${sGain >= 0 ? 'text-green-400' : 'text-red-400'}">${sGain >= 0 ? '+' : ''}₹${sGain.toLocaleString('en-IN', {maximumFractionDigits:0})} (${(sInv > 0 ? (sGain/sInv*100) : 0).toFixed(1)}%)</span>`;
 			document.getElementById('etf-value').innerText = `₹${eVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-			document.getElementById('etf-invested').innerText = `Inv: ₹${eInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			
 			const eGain = eVal - eInv;
-			const eDayPnlText = eDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
-			document.getElementById('etf-pnl').innerHTML = `<span class="${eDayPnlText}">${eDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(eDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${eGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%)</span>`;
+			const etfDayPct = eVal > 0 ? (eDayPnl / eVal) * 100 : 0;
+document.getElementById('etf-overall-return').innerHTML =
+`<span class="${eGain >= 0 ? 'text-green-400' : 'text-red-400'}">${eGain >= 0 ? '+' : ''}₹${eGain.toLocaleString('en-IN',{maximumFractionDigits:0})} (${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%)</span>`;
+document.getElementById('etf-today-change').innerHTML =
+`<span class="${eDayPnl >= 0 ? 'text-green-400' : 'text-red-400'}">${eDayPnl >= 0 ? '+' : ''}₹${Math.abs(eDayPnl).toLocaleString('en-IN',{maximumFractionDigits:0})} (${etfDayPct.toFixed(2)}%)</span>`;
 			document.getElementById('etf-header-inv').innerText = `₹${eInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('etf-header-pnl').innerHTML = `<span class="${eGain >= 0 ? 'text-green-400' : 'text-red-400'}">${eGain >= 0 ? '+' : ''}₹${eGain.toLocaleString('en-IN', {maximumFractionDigits:0})} (${(eInv > 0 ? (eGain/eInv*100) : 0).toFixed(1)}%)</span>`;
 			document.getElementById('mf-value').innerText = `₹${mVal.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-			document.getElementById('mf-invested').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			
 			const mGain = mVal - mInv;
-			const mDayPnlText = mDayPnl >= 0 ? 'text-green-400' : 'text-red-400';
-			document.getElementById('mf-pnl').innerHTML = `<span class="${mDayPnlText}">${mDayPnl >= 0 ? '▲' : '▼'}₹${Math.abs(mDayPnl).toLocaleString('en-IN', {maximumFractionDigits:0})}</span> <span class="${mGain >= 0 ? 'text-green-400' : 'text-red-400'} text-xs">(${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%)</span>`;
+			document.getElementById('mf-overall-return').innerHTML =
+`<span class="${mGain >= 0 ? 'text-green-400' : 'text-red-400'}">${mGain >= 0 ? '+' : ''}₹${mGain.toLocaleString('en-IN',{maximumFractionDigits:0})} (${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%)</span>`;
+document.getElementById('mf-today-change').innerHTML = 'N/A';
 			document.getElementById('mf-header-inv').innerText = `₹${mInv.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
 			document.getElementById('mf-header-pnl').innerHTML = `<span class="${mGain >= 0 ? 'text-green-400' : 'text-red-400'}">${mGain >= 0 ? '+' : ''}₹${mGain.toLocaleString('en-IN', {maximumFractionDigits:0})} (${(mInv > 0 ? (mGain/mInv*100) : 0).toFixed(1)}%)</span>`;
 		}
