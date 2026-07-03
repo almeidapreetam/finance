@@ -123,7 +123,13 @@
                <div class="flex items-baseline justify-between lg:block">
                   <div id="total-net-worth" class="text-4xl md:text-5xl font-mono font-bold text-white tracking-tighter">₹0</div>
                </div>
-               <div id="total-pnl-container" class="flex items-center gap-3 mt-2 opacity-1"><span class="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Total P/L</span><span id="total-pnl-value" class="font-bold text-sm md:text-base"></span><span id="total-pnl-pct" class="text-[10px] md:text-xs px-2 py-0.5 rounded border"></span></div>
+               <div id="total-pnl-container" class="flex items-center gap-3 mt-2 flex-wrap opacity-1">
+                  <span class="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider">Wealth Created</span>
+                  <span id="total-pnl-value" class="font-bold text-sm md:text-base"></span>
+                  <span id="total-pnl-pct" class="text-[10px] md:text-xs px-2 py-0.5 rounded border"></span>
+                  <span class="text-[10px] md:text-xs text-slate-400 uppercase font-bold tracking-wider ml-2">XIRR</span>
+                  <span id="xirr-value" class="text-[10px] md:text-xs px-2 py-0.5 rounded border font-bold"></span>
+               </div>
             </div>
             <div class="w-full lg:w-1/3 mt-2 lg:mt-0">
                <div class="flex justify-between text-[10px] md:text-xs mb-1.5 text-slate-400 uppercase font-bold tracking-widest"><span>Goal (1 Cr)</span><span id="goal-pct-text" class="text-blue-400">0%</span></div>
@@ -156,6 +162,25 @@
     </div>
 </div>
          <p id="last-updated-mobile" class="lg:hidden text-[9px] text-slate-600 font-mono mt-4 text-center">Synced: --:--</p>
+      </div>
+
+      <div class="card p-4 md:p-6 mb-6 shadow-xl border-green-900/20">
+         <h3 class="text-[10px] md:text-xs font-bold text-green-400 uppercase mb-4 italic">Realized &amp; Unrealized P&amp;L</h3>
+         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+               <p class="text-slate-400 text-[10px] md:text-xs uppercase font-bold tracking-wider">Realized Profit</p>
+               <p id="realized-profit" class="text-lg md:text-2xl font-mono text-green-400 mt-1 truncate">₹0</p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+               <p class="text-slate-400 text-[10px] md:text-xs uppercase font-bold tracking-wider">Realized Loss</p>
+               <p id="realized-loss" class="text-lg md:text-2xl font-mono text-red-400 mt-1 truncate">₹0</p>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-lg text-center col-span-2 md:col-span-1">
+               <p class="text-slate-400 text-[10px] md:text-xs uppercase font-bold tracking-wider">Unrealized P&amp;L</p>
+               <p id="unrealized-pnl" class="text-lg md:text-2xl font-mono mt-1 truncate">₹0</p>
+               <p id="unrealized-pnl-pct" class="text-[9px] md:text-[10px] text-slate-500 mt-0.5">0%</p>
+            </div>
+         </div>
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
@@ -350,7 +375,7 @@
       </div>
       <div class="mt-8 text-center text-[10px] text-slate-500 font-mono uppercase tracking-widest">
    App API Version: <span id="api-version">--</span>
-   App UI Version: <span id="ui-version">4.0.0</span>
+   App UI Version: <span id="ui-version">4.0.1</span>
 </div>
       <script>
          const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwMifiTbDrPYUvT5Bp9HyOVRiZvzkCs9ZPBzzqsgmuzjODXmwqP0i08EkgTfiUpf6PVwg/exec";
@@ -805,10 +830,32 @@ const tvSymbol = cleanSymbol.includes(':') ? cleanSymbol : `NSE:${cleanSymbol}`;
 			document.getElementById('etf-asset-ratio').innerText = `${etfPct}%`;
 			document.getElementById('mf-asset-ratio').innerText = `${mfPct}%`;
 			const totalGain = tVal - tInv;
-			document.getElementById('total-pnl-value').innerText = `${totalGain >= 0 ? '▲' : '▼'} ₹${Math.abs(totalGain).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
-			document.getElementById('total-pnl-value').className = totalGain >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
-			document.getElementById('total-pnl-pct').innerText = `${(tInv > 0 ? (totalGain/tInv*100) : 0).toFixed(2)}%`;
-			document.getElementById('total-pnl-pct').className = `text-[10px] md:text-xs px-2 py-0.5 rounded border ${totalGain >= 0 ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-red-400 border-red-500/30 bg-red-500/10'}`;
+			const portfolio = data.Portfolio || {};
+			const wealthCreated = portfolio.wealthCreated !== undefined ? portfolio.wealthCreated : totalGain;
+			const wealthCreatedPct = tInv > 0 ? (wealthCreated / tInv * 100) : 0;
+			const xirr = portfolio.xirr !== undefined ? portfolio.xirr : null;
+			document.getElementById('total-pnl-value').innerText = `${wealthCreated >= 0 ? '▲' : '▼'} ₹${Math.abs(wealthCreated).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			document.getElementById('total-pnl-value').className = wealthCreated >= 0 ? 'text-green-400 font-bold text-sm md:text-base' : 'text-red-400 font-bold text-sm md:text-base';
+			document.getElementById('total-pnl-pct').innerText = `${wealthCreatedPct.toFixed(2)}%`;
+			document.getElementById('total-pnl-pct').className = `text-[10px] md:text-xs px-2 py-0.5 rounded border ${wealthCreated >= 0 ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-red-400 border-red-500/30 bg-red-500/10'}`;
+			const xirrEl = document.getElementById('xirr-value');
+			if (xirr !== null) {
+				xirrEl.innerText = `${xirr >= 0 ? '+' : ''}${xirr.toFixed(2)}%`;
+				xirrEl.className = `text-[10px] md:text-xs px-2 py-0.5 rounded border font-bold ${xirr >= 0 ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-red-400 border-red-500/30 bg-red-500/10'}`;
+			} else {
+				xirrEl.innerText = '--';
+			}
+
+			const realizedProfit = portfolio.realizedProfit !== undefined ? portfolio.realizedProfit : 0;
+			const realizedLoss = portfolio.realizedLoss !== undefined ? portfolio.realizedLoss : 0;
+			const unrealizedPL = portfolio.unrealizedPL !== undefined ? portfolio.unrealizedPL : totalGain;
+			const unrealizedPLPct = portfolio.unrealizedPLPct !== undefined ? portfolio.unrealizedPLPct : (tInv > 0 ? (unrealizedPL/tInv*100) : 0);
+			document.getElementById('realized-profit').innerText = `₹${realizedProfit.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			document.getElementById('realized-loss').innerText = `₹${Math.abs(realizedLoss).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			const unrealizedEl = document.getElementById('unrealized-pnl');
+			unrealizedEl.innerText = `${unrealizedPL >= 0 ? '▲' : '▼'} ₹${Math.abs(unrealizedPL).toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+			unrealizedEl.className = `text-lg md:text-2xl font-mono mt-1 truncate ${unrealizedPL >= 0 ? 'text-green-400' : 'text-red-400'}`;
+			document.getElementById('unrealized-pnl-pct').innerText = `${unrealizedPLPct.toFixed(2)}%`;
 			
 			const progress = Math.min((tVal / 10000000) * 100, 100);
 			document.getElementById('goal-progress-bar').style.width = `${progress}%`;
